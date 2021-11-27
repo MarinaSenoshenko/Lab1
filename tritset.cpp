@@ -44,17 +44,18 @@ ostream& operator<<(ostream& out, Trit trit) {
 
 /*metods from private*/
 /*using syntax for description of class methods outside of class*/
-uint TritSet::GetSize() { 
-    return array_size_; 
+
+uint TritSet::GetSize() const {
+    return array_size_;
 }
 
-uint TritSet::GetUintCountFromTritsCount(const uint trits_count) {
+uint TritSet::GetUintCountFromTritsCount(const uint trits_count) const {
     double uint_count = static_cast<double>(trits_count) / kTritsInUint;
     uint_count = ceil(uint_count);
     return static_cast<uint>(uint_count);
 }
 
-uint TritSet::GetUintIndFromTritInd(const uint trit_ind) {
+uint TritSet::GetUintIndFromTritInd(const uint trit_ind) const {
     double uint_ind = trit_ind;
     uint_ind /= kTritsInUint;
     return static_cast<uint>(uint_ind);
@@ -66,13 +67,14 @@ void TritSet::Resize(const uint new_size_in_trits) {
     array_size_ = uint_count * kTritsInUint;
 }
 
-inline uint TritSet::GetTritIndInUint(uint trit_ind) {
+inline uint TritSet::GetTritIndInUint(uint trit_ind) const {
     return trit_ind % kTritsInUint;
 }
 
 /*metods from public*/
-TritSet::TritSet(const uint size_in_trits) { 
-    Resize(size_in_trits); 
+
+TritSet::TritSet(const uint size_in_trits) {
+    Resize(size_in_trits);
 }
 
 TritSet::TritSet(const TritSet& set) {
@@ -80,7 +82,7 @@ TritSet::TritSet(const TritSet& set) {
     array_size_ = set.array_size_;
 }
 
-Trit TritSet::GetTritValue(const uint trit_ind) {
+Trit TritSet::GetTritValue(const uint trit_ind) const {
     if (array_size_ <= trit_ind) {
         return Unknown;
     }
@@ -123,7 +125,7 @@ uint TritSet::PutTritToIndInUint(uint trit, uint trit_ind_in_uint, uint uint_to_
     return uint_to_change;
 }
 
-uint TritSet::GetUintIndWithLastTrit() {
+uint TritSet::GetUintIndWithLastTrit() const {
     uint uint_count = GetSize() / kTritsInUint;
     uint last_filled_uint;
     for (last_filled_uint = uint_count - 1; last_filled_uint >= 0; last_filled_uint--) {
@@ -134,7 +136,7 @@ uint TritSet::GetUintIndWithLastTrit() {
     return last_filled_uint;
 }
 
-uint TritSet::GetLastSettedTritIndInUint(uint uint_with_trits) {
+uint TritSet::GetLastSettedTritIndInUint(uint uint_with_trits) const {
     Trit cur_trit = Unknown;
     uint cur_trit_ind;
     uint last_two_ones = 3;  /*00..11*/
@@ -177,7 +179,7 @@ void TritSet::Trim(uint trit_ind) {
     TrimUintAfterTritInd(trit_ind);
 }
 
-uint TritSet::GetCountOfTritsWithType(Trit type) {
+uint TritSet::GetCountOfTritsWithType(Trit type) const {
     uint last_filled_uint_ind = GetUintIndWithLastTrit();
     uint last_trit_ind = (last_filled_uint_ind + 1) * kTritsInUint - 1;
     uint unknown_trits_after_last_trit = 0;
@@ -243,6 +245,10 @@ TritSet TritSet::operator|(TritSet& set) {
     return result_set;
 }
 
+uint TritSet::Capacity() const {
+    return this->size;
+}
+
 TritSet TritSet::operator~() {
     uint new_set_size = GetSize();
 
@@ -288,3 +294,66 @@ void TritSet::ProxyTrit::operator=(ProxyTrit new_trit) {
         set.SetTritValue(trit_ind, new_trit_value);
     }
 }
+
+
+
+/*r_value operator[]*/
+
+Trit TritSet::operator[](const uint trit_ind) const {
+    uint set_byte = trit_ind * 2 / 32;
+
+    size_t index_bit = 32 - ((trit_ind * 2) % 32) - trit_ind;
+    uint first_bit = this->set[set_byte] & ((uint)1 << index_bit);
+    uint second_bit = this->set[set_byte] & ((uint)1 << (index_bit + 1));
+
+    return Trit((first_bit + second_bit) >> index_bit);
+}
+
+
+
+/*class iterator methods*/
+
+TritSet::Iterator TritSet::begin() {
+    return TritSet::Iterator(this, 0);
+}
+
+TritSet::Iterator TritSet::end() {
+    return TritSet::Iterator(this, this->size);
+}
+
+TritSet::Iterator::Iterator(TritSet* set_, size_t index) {
+    this->set_iterator = set_;
+    this->index_iterator = index;
+}
+
+TritSet::Iterator TritSet::Iterator::operator++() {
+    this->index_iterator++;
+
+    return TritSet::Iterator(this->set_iterator, index_iterator);
+}
+
+TritSet::Iterator TritSet::Iterator::operator--() {
+    auto temp_iterator = &this->set_iterator[index_iterator];
+    this->index_iterator--;
+
+    return TritSet::Iterator(temp_iterator, index_iterator);
+}
+
+bool TritSet::Iterator::operator==(const TritSet::Iterator& it) const {
+    if (this->set_iterator == it.set_iterator && this->index_iterator == it.index_iterator)
+        return true;
+
+    return false;
+}
+
+bool TritSet::Iterator::operator!=(const TritSet::Iterator& it) const {
+    if (*this == it)
+        return false;
+
+    return true;
+}
+
+TritSet::ProxyTrit TritSet::Iterator::operator*() {
+    return (*this->set_iterator)[index_iterator];
+}
+
