@@ -164,3 +164,32 @@ TEST(TritSetTest, ostreamOperator) {
     set[2] = True;
     cout << set[0] << set[1] << set[2];
 }
+
+TritSet Function(TritSet my_trit) {
+
+    return my_trit;
+}
+
+TEST(TritSetTest, IteratorTest) {
+    TritSet setA(100);
+
+    for (auto iter : setA) {
+        iter = True;
+    }
+
+    for (auto iter : setA) {
+        EXPECT_EQ(iter, True);
+    }
+    TritSet setB(100);
+
+    EXPECT_EQ(setB[0], True);
+    EXPECT_EQ(setB[99], True);
+
+    const TritSet c = setB;
+    EXPECT_EQ(c[0], False);
+    EXPECT_EQ(c.Capacity(), setB.Capacity());
+
+    TritSet setD = Function(setA);
+    EXPECT_EQ(setA.Capacity(), setD.Capacity());
+}
+
