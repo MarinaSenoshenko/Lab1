@@ -35,48 +35,66 @@ class TritSet {
         /*constructor*/
         ProxyTrit(TritSet& set, uint ind_of_uint_with_trit, uint trit_ind);
         ProxyTrit(Trit trit);
-        Trit GetTritValue() { 
-            return trit_value; 
+        Trit GetTritValue() {
+            return trit_value;
         }
-        operator Trit() { 
-            return trit_value; 
+        operator Trit() {
+            return trit_value;
         }
         void operator=(Trit new_trit_value);
         void operator=(ProxyTrit new_trit);
     };
 
 private:
+    uint size{};
+    uint* set;
     vector<uint> trits_array_;
     uint array_size_ = 0;
-    uint GetUintCountFromTritsCount(const uint trits_count);
-    uint GetTritIndInUint(uint trit_ind);
-    uint GetUintIndFromTritInd(const uint trit_ind);  
-    Trit GetTritValue(const uint trit_ind);
-    uint GetUintIndWithLastTrit();
-    uint GetLastSettedTritIndInUint(uint uint_with_trits);
-    uint PutTritToIndInUint(uint trit, uint trit_ind_in_uint,
-        uint uint_to_change);
+    uint GetUintCountFromTritsCount(const uint trits_count) const;
+    uint GetTritIndInUint(uint trit_ind) const;
+    uint GetUintIndFromTritInd(const uint trit_ind) const;
+    Trit GetTritValue(const uint trit_ind) const;
+    uint GetUintIndWithLastTrit() const;
+    uint GetLastSettedTritIndInUint(uint uint_with_trits) const;
+    uint PutTritToIndInUint(uint trit, uint trit_ind_in_uint, uint uint_to_change);
     void TrimUintAfterTritInd(uint trit_ind);
     void SetTritValue(uint trit_ind, Trit new_value);
 
 public:
-    /*constructor*/
     explicit TritSet(const uint size);
     TritSet(const TritSet& set);
-    /*methods*/
-    uint GetSize();
-    uint GetCountOfTritsWithType(Trit type);
+    uint GetSize() const;
+    uint GetCountOfTritsWithType(Trit type) const;
     unordered_map<Trit, uint> Cardinality();
     uint GetLastSettedTritInd();
     void Resize(const uint new_size_in_trits);
     void Shrink();
     void Trim(uint trit_ind);
-    /* operators*/
     TritSet operator&(TritSet& set);
     TritSet operator|(TritSet& set);
     TritSet operator~();
     friend ostream& operator<<(ostream& out, TritSet::ProxyTrit proxy_trit);
     ProxyTrit operator[](const uint trit_ind);
+    Trit operator[](const uint trit_ind) const;
+    uint Capacity() const;
+
+    class Iterator {
+    private:
+        TritSet* set_iterator;
+        size_t index_iterator;
+    public:
+        explicit Iterator(TritSet* my_set, size_t index);
+        Iterator operator++ ();
+        Iterator operator-- ();
+        bool operator== (const Iterator& it) const;
+        bool operator!= (const Iterator& it) const;
+
+        ProxyTrit operator* (); //dereference
+    };
+
+    Iterator begin();
+    Iterator end();
+
 };
 
 Trit operator&(Trit trit1, Trit trit2);
