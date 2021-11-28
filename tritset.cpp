@@ -300,9 +300,9 @@ void TritSet::ProxyTrit::operator=(ProxyTrit new_trit) {
 /*r_value operator[]*/
 
 Trit TritSet::operator[](const uint trit_ind) const {
-    uint set_byte = trit_ind * 2 / 32;
+    uint set_byte = trit_ind * kTritBitesSize / kTritsInUint;
 
-    size_t index_bit = 32 - ((trit_ind * 2) % 32) - trit_ind;
+    size_t index_bit = kTritsInUint - ((trit_ind * kTritBitesSize) % kTritsInUint) - trit_ind;
     uint first_bit = this->set[set_byte] & ((uint)1 << index_bit);
     uint second_bit = this->set[set_byte] & ((uint)1 << (index_bit + 1));
 
